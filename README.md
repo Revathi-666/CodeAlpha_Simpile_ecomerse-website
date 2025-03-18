@@ -1,104 +1,163 @@
-# E-Commerce Store
+# detect-libc
 
-This is a simple e-commerce store built with **HTML/CSS/JavaScript** for the frontend and **Express.js** with **SQLite** for the backend. The application allows users to browse products, add them to a shopping cart, and complete the checkout process. It also includes an order history page where users can view their past orders.
+Node.js module to detect details of the C standard library (libc)
+implementation provided by a given Linux system.
 
----
+Currently supports detection of GNU glibc and MUSL libc.
 
-## Features
+Provides asychronous and synchronous functions for the
+family (e.g. `glibc`, `musl`) and version (e.g. `1.23`, `1.2.3`).
 
-- **Product Listing**: Display a list of products with their name, price, and image.
-- **Shopping Cart**: Add/remove products, update quantities, and view the total price.
-- **Checkout**: Complete the checkout process and clear the cart.
-- **Order History**: View past orders with their associated items.
-- **Product Management**: Fetch products from the database.
-- **Cart Management**: Add/remove items, update quantities, and clear the cart.
-- **Order Management**: Create orders, add order items, and fetch order history.
+The version numbers of libc implementations
+are not guaranteed to be semver-compliant.
 
----
+For previous v1.x releases, please see the
+[v1](https://github.com/lovell/detect-libc/tree/v1) branch.
 
-## Setup Instructions
+## Install
 
-### **1. Clone the Repository**
-
-```bash
-git clone https://github.com/DarkenSoda/Simple_E-Commerce.git
-cd Simple_E-Commerce
+```sh
+npm install detect-libc
 ```
 
-### **2. Install Dependencies**
+## API
 
-Navigate to the `backend` directory and install the required dependencies:
+### GLIBC
 
-```bash
-cd backend
-npm install
+```ts
+const GLIBC: string = 'glibc';
 ```
 
-### **3. Start the Backend Server**
+A String constant containing the value `glibc`.
 
-From the `backend` directory, start the server:
+### MUSL
 
-```bash
-node app.js
+```ts
+const MUSL: string = 'musl';
 ```
 
-The server will run on `http://localhost:5000`.
+A String constant containing the value `musl`.
 
-### **4. Opening the app**
+### family
 
-Open the `index.html` web page that is located in the `frontend` directory.
+```ts
+function family(): Promise<string | null>;
+```
 
----
+Resolves asychronously with:
 
-## API Endpoints
+* `glibc` or `musl` when the libc family can be determined
+* `null` when the libc family cannot be determined
+* `null` when run on a non-Linux platform
 
-### **Products**
+```js
+const { family, GLIBC, MUSL } = require('detect-libc');
 
-- **GET `/api/products`**: Fetch all products.
+switch (await family()) {
+  case GLIBC: ...
+  case MUSL: ...
+  case null: ...
+}
+```
 
-### **Cart**
+### familySync
 
-- **GET `/api/cart`**: Fetch all items in the cart.
-- **POST `/api/cart`**: Add an item to the cart.
-- **PUT `/api/cart/:id`**: Update the quantity of an item in the cart.
-- **DELETE `/api/cart/:id`**: Remove an item from the cart.
-- **DELETE `/api/cart`**: Clear the cart.
+```ts
+function familySync(): string | null;
+```
 
-### **Orders**
+Synchronous version of `family()`.
 
-- **GET `/api/orders`**: Fetch all orders with their items.
-- **POST `/api/orders`**: Create a new order.
+```js
+const { familySync, GLIBC, MUSL } = require('detect-libc');
 
----
+switch (familySync()) {
+  case GLIBC: ...
+  case MUSL: ...
+  case null: ...
+}
+```
 
-## Usage
+### version
 
-1. **Home Page**:
-   - Browse products and add them to the cart.
+```ts
+function version(): Promise<string | null>;
+```
 
-2. **Shopping Cart**:
-   - View items in the cart, update quantities, or remove items.
-   - Proceed to checkout.
+Resolves asychronously with:
 
-3. **Checkout**:
-   - Complete the checkout process to create an order and clear the cart.
+* The version when it can be determined
+* `null` when the libc family cannot be determined
+* `null` when run on a non-Linux platform
 
-4. **Order History**:
-   - View past orders and their associated items.
+```js
+const { version } = require('detect-libc');
 
----
+const v = await version();
+if (v) {
+  const [major, minor, patch] = v.split('.');
+}
+```
 
-## Contributing
+### versionSync
 
-Contributions are welcome! If you'd like to contribute, please follow these steps:
+```ts
+function versionSync(): string | null;
+```
 
-1. Fork the repository.
-2. Create a new branch for your feature or bugfix.
-3. Commit your changes.
-4. Submit a pull request.
+Synchronous version of `version()`.
 
----
+```js
+const { versionSync } = require('detect-libc');
 
-## License
+const v = versionSync();
+if (v) {
+  const [major, minor, patch] = v.split('.');
+}
+```
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+### isNonGlibcLinux
+
+```ts
+function isNonGlibcLinux(): Promise<boolean>;
+```
+
+Resolves asychronously with:
+
+* `false` when the libc family is `glibc`
+* `true` when the libc family is not `glibc`
+* `false` when run on a non-Linux platform
+
+```js
+const { isNonGlibcLinux } = require('detect-libc');
+
+if (await isNonGlibcLinux()) { ... }
+```
+
+### isNonGlibcLinuxSync
+
+```ts
+function isNonGlibcLinuxSync(): boolean;
+```
+
+Synchronous version of `isNonGlibcLinux()`.
+
+```js
+const { isNonGlibcLinuxSync } = require('detect-libc');
+
+if (isNonGlibcLinuxSync()) { ... }
+```
+
+## Licensing
+
+Copyright 2017 Lovell Fuller and others.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
